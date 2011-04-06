@@ -70,16 +70,68 @@ src/CMakeFiles/crypto.dir/main.cpp.o.provides: src/CMakeFiles/crypto.dir/main.cp
 src/CMakeFiles/crypto.dir/main.cpp.o.provides.build: src/CMakeFiles/crypto.dir/main.cpp.o
 .PHONY : src/CMakeFiles/crypto.dir/main.cpp.o.provides.build
 
+src/CMakeFiles/crypto.dir/DBManager.cpp.o: src/CMakeFiles/crypto.dir/flags.make
+src/CMakeFiles/crypto.dir/DBManager.cpp.o: ../src/DBManager.cpp
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/thomas/CryptPasswords/projects/CMakeFiles $(CMAKE_PROGRESS_2)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object src/CMakeFiles/crypto.dir/DBManager.cpp.o"
+	cd /home/thomas/CryptPasswords/projects/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/crypto.dir/DBManager.cpp.o -c /home/thomas/CryptPasswords/src/DBManager.cpp
+
+src/CMakeFiles/crypto.dir/DBManager.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/crypto.dir/DBManager.cpp.i"
+	cd /home/thomas/CryptPasswords/projects/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/thomas/CryptPasswords/src/DBManager.cpp > CMakeFiles/crypto.dir/DBManager.cpp.i
+
+src/CMakeFiles/crypto.dir/DBManager.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/crypto.dir/DBManager.cpp.s"
+	cd /home/thomas/CryptPasswords/projects/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/thomas/CryptPasswords/src/DBManager.cpp -o CMakeFiles/crypto.dir/DBManager.cpp.s
+
+src/CMakeFiles/crypto.dir/DBManager.cpp.o.requires:
+.PHONY : src/CMakeFiles/crypto.dir/DBManager.cpp.o.requires
+
+src/CMakeFiles/crypto.dir/DBManager.cpp.o.provides: src/CMakeFiles/crypto.dir/DBManager.cpp.o.requires
+	$(MAKE) -f src/CMakeFiles/crypto.dir/build.make src/CMakeFiles/crypto.dir/DBManager.cpp.o.provides.build
+.PHONY : src/CMakeFiles/crypto.dir/DBManager.cpp.o.provides
+
+src/CMakeFiles/crypto.dir/DBManager.cpp.o.provides.build: src/CMakeFiles/crypto.dir/DBManager.cpp.o
+.PHONY : src/CMakeFiles/crypto.dir/DBManager.cpp.o.provides.build
+
+src/CMakeFiles/crypto.dir/Encryptor.cpp.o: src/CMakeFiles/crypto.dir/flags.make
+src/CMakeFiles/crypto.dir/Encryptor.cpp.o: ../src/Encryptor.cpp
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/thomas/CryptPasswords/projects/CMakeFiles $(CMAKE_PROGRESS_3)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building CXX object src/CMakeFiles/crypto.dir/Encryptor.cpp.o"
+	cd /home/thomas/CryptPasswords/projects/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_FLAGS) -o CMakeFiles/crypto.dir/Encryptor.cpp.o -c /home/thomas/CryptPasswords/src/Encryptor.cpp
+
+src/CMakeFiles/crypto.dir/Encryptor.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/crypto.dir/Encryptor.cpp.i"
+	cd /home/thomas/CryptPasswords/projects/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -E /home/thomas/CryptPasswords/src/Encryptor.cpp > CMakeFiles/crypto.dir/Encryptor.cpp.i
+
+src/CMakeFiles/crypto.dir/Encryptor.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/crypto.dir/Encryptor.cpp.s"
+	cd /home/thomas/CryptPasswords/projects/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_FLAGS) -S /home/thomas/CryptPasswords/src/Encryptor.cpp -o CMakeFiles/crypto.dir/Encryptor.cpp.s
+
+src/CMakeFiles/crypto.dir/Encryptor.cpp.o.requires:
+.PHONY : src/CMakeFiles/crypto.dir/Encryptor.cpp.o.requires
+
+src/CMakeFiles/crypto.dir/Encryptor.cpp.o.provides: src/CMakeFiles/crypto.dir/Encryptor.cpp.o.requires
+	$(MAKE) -f src/CMakeFiles/crypto.dir/build.make src/CMakeFiles/crypto.dir/Encryptor.cpp.o.provides.build
+.PHONY : src/CMakeFiles/crypto.dir/Encryptor.cpp.o.provides
+
+src/CMakeFiles/crypto.dir/Encryptor.cpp.o.provides.build: src/CMakeFiles/crypto.dir/Encryptor.cpp.o
+.PHONY : src/CMakeFiles/crypto.dir/Encryptor.cpp.o.provides.build
+
 # Object files for target crypto
 crypto_OBJECTS = \
-"CMakeFiles/crypto.dir/main.cpp.o"
+"CMakeFiles/crypto.dir/main.cpp.o" \
+"CMakeFiles/crypto.dir/DBManager.cpp.o" \
+"CMakeFiles/crypto.dir/Encryptor.cpp.o"
 
 # External object files for target crypto
 crypto_EXTERNAL_OBJECTS =
 
 src/crypto: src/CMakeFiles/crypto.dir/main.cpp.o
-src/crypto: src/gcryptWrapper/libgcryptWrapperd.a
-src/crypto: /lib/libgcrypt.so
+src/crypto: src/CMakeFiles/crypto.dir/DBManager.cpp.o
+src/crypto: src/CMakeFiles/crypto.dir/Encryptor.cpp.o
+src/crypto: /usr/lib/libcrypto++.so
+src/crypto: /usr/lib/libboost_program_options-mt.a
 src/crypto: src/CMakeFiles/crypto.dir/build.make
 src/crypto: src/CMakeFiles/crypto.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --red --bold "Linking CXX executable crypto"
@@ -90,6 +142,8 @@ src/CMakeFiles/crypto.dir/build: src/crypto
 .PHONY : src/CMakeFiles/crypto.dir/build
 
 src/CMakeFiles/crypto.dir/requires: src/CMakeFiles/crypto.dir/main.cpp.o.requires
+src/CMakeFiles/crypto.dir/requires: src/CMakeFiles/crypto.dir/DBManager.cpp.o.requires
+src/CMakeFiles/crypto.dir/requires: src/CMakeFiles/crypto.dir/Encryptor.cpp.o.requires
 .PHONY : src/CMakeFiles/crypto.dir/requires
 
 src/CMakeFiles/crypto.dir/clean:

@@ -41,6 +41,8 @@
 INCLUDE (FindPackageHandleStandardArgs)
 
 SET (_CRYPTOPP_POSSIBLE_DIRS
+    /usr/
+    /usr/local/
     ${CRYPTOPP_ROOT_DIR}
     "C:/CryptoPP/")
 
@@ -51,7 +53,7 @@ SET (_CRYPTOPP_POSSIBLE_LIB_SUFFIXES
     lib)
 
 FIND_PATH (CRYPTOPP_ROOT_DIR
-    NAMES include/cryptopp/cryptlib.h
+    NAMES crypto++/cryptlib.h
     PATHS ${_CRYPTOPP_POSSIBLE_DIRS}
     DOC "CryptoPP root directory")
 
@@ -100,7 +102,7 @@ IF (WIN32 AND NOT CYGWIN)
     ENDIF (MSVC)
 ELSE (WIN32 AND NOT CYGWIN)
     FIND_LIBRARY (CRYPTOPP_LIBRARIES 
-        NAMES cryptlib
+        NAMES crypto++
         PATH_SUFFIXES ${_CRYPTOPP_POSSIBLE_LIB_SUFFIXES}
         DOC "CryptoPP library")
 ENDIF (WIN32 AND NOT CYGWIN)

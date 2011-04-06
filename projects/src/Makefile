@@ -88,7 +88,7 @@ install/strip/fast: install/strip
 
 # Special rule for the target list_install_components
 list_install_components:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"applications\" \"headers\" \"library\" \"share\""
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"applications\" \"headers\" \"share\""
 .PHONY : list_install_components
 
 # Special rule for the target list_install_components
@@ -160,6 +160,54 @@ crypto/fast:
 	cd /home/thomas/CryptPasswords/projects && $(MAKE) -f src/CMakeFiles/crypto.dir/build.make src/CMakeFiles/crypto.dir/build
 .PHONY : crypto/fast
 
+DBManager.o: DBManager.cpp.o
+.PHONY : DBManager.o
+
+# target to build an object file
+DBManager.cpp.o:
+	cd /home/thomas/CryptPasswords/projects && $(MAKE) -f src/CMakeFiles/crypto.dir/build.make src/CMakeFiles/crypto.dir/DBManager.cpp.o
+.PHONY : DBManager.cpp.o
+
+DBManager.i: DBManager.cpp.i
+.PHONY : DBManager.i
+
+# target to preprocess a source file
+DBManager.cpp.i:
+	cd /home/thomas/CryptPasswords/projects && $(MAKE) -f src/CMakeFiles/crypto.dir/build.make src/CMakeFiles/crypto.dir/DBManager.cpp.i
+.PHONY : DBManager.cpp.i
+
+DBManager.s: DBManager.cpp.s
+.PHONY : DBManager.s
+
+# target to generate assembly for a file
+DBManager.cpp.s:
+	cd /home/thomas/CryptPasswords/projects && $(MAKE) -f src/CMakeFiles/crypto.dir/build.make src/CMakeFiles/crypto.dir/DBManager.cpp.s
+.PHONY : DBManager.cpp.s
+
+Encryptor.o: Encryptor.cpp.o
+.PHONY : Encryptor.o
+
+# target to build an object file
+Encryptor.cpp.o:
+	cd /home/thomas/CryptPasswords/projects && $(MAKE) -f src/CMakeFiles/crypto.dir/build.make src/CMakeFiles/crypto.dir/Encryptor.cpp.o
+.PHONY : Encryptor.cpp.o
+
+Encryptor.i: Encryptor.cpp.i
+.PHONY : Encryptor.i
+
+# target to preprocess a source file
+Encryptor.cpp.i:
+	cd /home/thomas/CryptPasswords/projects && $(MAKE) -f src/CMakeFiles/crypto.dir/build.make src/CMakeFiles/crypto.dir/Encryptor.cpp.i
+.PHONY : Encryptor.cpp.i
+
+Encryptor.s: Encryptor.cpp.s
+.PHONY : Encryptor.s
+
+# target to generate assembly for a file
+Encryptor.cpp.s:
+	cd /home/thomas/CryptPasswords/projects && $(MAKE) -f src/CMakeFiles/crypto.dir/build.make src/CMakeFiles/crypto.dir/Encryptor.cpp.s
+.PHONY : Encryptor.cpp.s
+
 main.o: main.cpp.o
 .PHONY : main.o
 
@@ -198,6 +246,12 @@ help:
 	@echo "... list_install_components"
 	@echo "... package_source"
 	@echo "... rebuild_cache"
+	@echo "... DBManager.o"
+	@echo "... DBManager.i"
+	@echo "... DBManager.s"
+	@echo "... Encryptor.o"
+	@echo "... Encryptor.i"
+	@echo "... Encryptor.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

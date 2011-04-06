@@ -14,6 +14,21 @@
 # EXTERNAL cache entries
 ########################
 
+//Path to a file.
+Boost_INCLUDE_DIR:PATH=/usr/include
+
+//Boost library directory
+Boost_LIBRARY_DIRS:FILEPATH=/usr/lib
+
+//The Boost PROGRAM_OPTIONS library
+Boost_PROGRAM_OPTIONS_LIBRARY:FILEPATH=optimized;/usr/lib/libboost_program_options-mt.a;debug;/usr/lib/libboost_program_options-mt.a
+
+//Boost program_options library (debug)
+Boost_PROGRAM_OPTIONS_LIBRARY_DEBUG:FILEPATH=/usr/lib/libboost_program_options-mt.a
+
+//Boost program_options library (release)
+Boost_PROGRAM_OPTIONS_LIBRARY_RELEASE:FILEPATH=/usr/lib/libboost_program_options-mt.a
+
 //Path to a program.
 CMAKE_AR:FILEPATH=/usr/bin/ar
 
@@ -160,6 +175,15 @@ CPACK_SOURCE_TZ:BOOL=ON
 //Enable to build ZIP source packages
 CPACK_SOURCE_ZIP:BOOL=OFF
 
+//CryptoPP include directory
+CRYPTOPP_INCLUDE_DIR:PATH=/usr/include
+
+//CryptoPP library
+CRYPTOPP_LIBRARIES:FILEPATH=/usr/lib/libcrypto++.so
+
+//CryptoPP root directory
+CRYPTOPP_ROOT_DIR:PATH=/usr/include
+
 //Value Computed by CMake
 CryptPasswords_BINARY_DIR:STATIC=/home/thomas/CryptPasswords/projects
 
@@ -172,20 +196,27 @@ DOXYGEN_DOT_EXECUTABLE:FILEPATH=DOXYGEN_DOT_EXECUTABLE-NOTFOUND
 //Doxygen documentation generation tool (http://www.doxygen.org)
 DOXYGEN_EXECUTABLE:FILEPATH=/usr/bin/doxygen
 
-//Path to a file.
-LIBGCRYPT_INCLUDE_DIR:PATH=/usr/include
-
-//Path to a library.
-LIBGCRYPT_LIBRARY:FILEPATH=/lib/libgcrypt.so
-
-//Dependencies for the target
-gcryptWrapper_LIB_DEPENDS:STATIC=general;/lib/libgcrypt.so;
-
 
 ########################
 # INTERNAL cache entries
 ########################
 
+//ADVANCED property for variable: Boost_INCLUDE_DIR
+Boost_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Boost_LIBRARY_DIRS
+Boost_LIBRARY_DIRS-ADVANCED:INTERNAL=1
+//The library version string for boost libraries
+Boost_LIB_VERSION:INTERNAL=1_42
+//Whether the Boost PROGRAM_OPTIONS library found
+Boost_PROGRAM_OPTIONS_FOUND:INTERNAL=ON
+//ADVANCED property for variable: Boost_PROGRAM_OPTIONS_LIBRARY
+Boost_PROGRAM_OPTIONS_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Boost_PROGRAM_OPTIONS_LIBRARY_DEBUG
+Boost_PROGRAM_OPTIONS_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Boost_PROGRAM_OPTIONS_LIBRARY_RELEASE
+Boost_PROGRAM_OPTIONS_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
+//The version number for boost libraries
+Boost_VERSION:INTERNAL=104200
 //ADVANCED property for variable: CMAKE_AR
 CMAKE_AR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_BUILD_TOOL
@@ -274,7 +305,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_LOCAL_GENERATORS:INTERNAL=4
+CMAKE_NUMBER_OF_LOCAL_GENERATORS:INTERNAL=3
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
@@ -311,14 +342,17 @@ CPACK_SOURCE_TGZ-ADVANCED:INTERNAL=1
 CPACK_SOURCE_TZ-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CPACK_SOURCE_ZIP
 CPACK_SOURCE_ZIP-ADVANCED:INTERNAL=1
+CRYPTOPP_CACHED:INTERNAL=TRUE
+//ADVANCED property for variable: CRYPTOPP_INCLUDE_DIR
+CRYPTOPP_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CRYPTOPP_LIBRARIES
+CRYPTOPP_LIBRARIES-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: DOXYGEN_DOT_EXECUTABLE
 DOXYGEN_DOT_EXECUTABLE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: DOXYGEN_EXECUTABLE
 DOXYGEN_EXECUTABLE-ADVANCED:INTERNAL=1
+//Details about finding CryptoPP
+FIND_PACKAGE_MESSAGE_DETAILS_CryptoPP:INTERNAL=[/usr/include][/usr/lib/libcrypto++.so][v()]
 //Details about finding Doxygen
 FIND_PACKAGE_MESSAGE_DETAILS_Doxygen:INTERNAL=[/usr/bin/doxygen][v()]
-//ADVANCED property for variable: LIBGCRYPT_INCLUDE_DIR
-LIBGCRYPT_INCLUDE_DIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: LIBGCRYPT_LIBRARY
-LIBGCRYPT_LIBRARY-ADVANCED:INTERNAL=1
 

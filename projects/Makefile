@@ -88,7 +88,7 @@ install/strip/fast: install/strip
 
 # Special rule for the target list_install_components
 list_install_components:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"applications\" \"headers\" \"library\" \"share\""
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"applications\" \"headers\" \"share\""
 .PHONY : list_install_components
 
 # Special rule for the target list_install_components
@@ -198,19 +198,6 @@ crypto/fast:
 	$(MAKE) -f src/CMakeFiles/crypto.dir/build.make src/CMakeFiles/crypto.dir/build
 .PHONY : crypto/fast
 
-#=============================================================================
-# Target rules for targets named gcryptWrapper
-
-# Build rule for target.
-gcryptWrapper: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 gcryptWrapper
-.PHONY : gcryptWrapper
-
-# fast build rule for target.
-gcryptWrapper/fast:
-	$(MAKE) -f src/gcryptWrapper/CMakeFiles/gcryptWrapper.dir/build.make src/gcryptWrapper/CMakeFiles/gcryptWrapper.dir/build
-.PHONY : gcryptWrapper/fast
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -228,7 +215,6 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... uninstall"
 	@echo "... crypto"
-	@echo "... gcryptWrapper"
 .PHONY : help
 
 

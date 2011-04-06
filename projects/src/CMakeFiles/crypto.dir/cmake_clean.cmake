@@ -1,5 +1,7 @@
 FILE(REMOVE_RECURSE
   "CMakeFiles/crypto.dir/main.cpp.o"
+  "CMakeFiles/crypto.dir/DBManager.cpp.o"
+  "CMakeFiles/crypto.dir/Encryptor.cpp.o"
   "crypto.pdb"
   "crypto"
 )

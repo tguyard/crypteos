@@ -1,1 +1,1 @@
-/usr/bin/c++   -std=c++0x -Wall -Wextra -fmessage-length=0 -O0 -ggdb3 -pg   CMakeFiles/crypto.dir/main.cpp.o  -o crypto -rdynamic gcryptWrapper/libgcryptWrapperd.a -lgcrypt 
+/usr/bin/c++   -std=c++0x -Wall -Wextra -fmessage-length=0 -O0 -ggdb3 -pg   CMakeFiles/crypto.dir/main.cpp.o CMakeFiles/crypto.dir/DBManager.cpp.o CMakeFiles/crypto.dir/Encryptor.cpp.o  -o crypto -rdynamic -lcrypto++ -Wl,-Bstatic -lboost_program_options-mt -Wl,-Bdynamic 
