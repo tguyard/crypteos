@@ -1,0 +1,1 @@
+/usr/bin/c++   -std=c++0x -Wall -Wextra -fmessage-length=0 -O0 -ggdb3 -pg   CMakeFiles/crypto.dir/main.cpp.o  -o crypto -rdynamic gcryptWrapper/libgcryptWrapperd.a -lgcrypt 

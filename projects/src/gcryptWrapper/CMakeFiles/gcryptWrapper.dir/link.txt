@@ -1,0 +1,2 @@
+/usr/bin/ar cr libgcryptWrapperd.a  CMakeFiles/gcryptWrapper.dir/crypto.cc.o
+/usr/bin/ranlib libgcryptWrapperd.a

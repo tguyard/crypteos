@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/thomas/CryptPasswords/src/gcryptWrapper/crypto.cc
+vector
+-
+crypto.hh
+/home/thomas/CryptPasswords/src/gcryptWrapper/crypto.hh
+iostream
+-
+
+/home/thomas/CryptPasswords/src/gcryptWrapper/crypto.hh
+memory
+-
+exception
+-
+stdexcept
+-
+string
+-
+cstring
+-
+gcrypt.h
+-
+

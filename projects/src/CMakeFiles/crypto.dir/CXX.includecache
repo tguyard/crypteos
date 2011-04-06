@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/thomas/CryptPasswords/src/gcryptWrapper/crypto.hh
+memory
+-
+exception
+-
+stdexcept
+-
+string
+-
+cstring
+-
+gcrypt.h
+-
+
+/home/thomas/CryptPasswords/src/main.cpp
+iostream
+-
+gcryptWrapper/crypto.hh
+/home/thomas/CryptPasswords/src/gcryptWrapper/crypto.hh
+
