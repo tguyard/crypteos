@@ -2,194 +2,174 @@
 #include "crypto.hh"
 #include <iostream>
 
-namespace crypto
-{
+namespace crypto {
 
-	using std::vector;
-	using std::runtime_error;
-	using std::invalid_argument;
+using std::vector;
+using std::runtime_error;
+using std::invalid_argument;
 
-    void check_err(gcry_error_t a, const char* (getError)(gcry_error_t)){
-        if (a)
-        {
-            std::cerr << getError(a) << std::endl;
-        }
-    }
-
-	string
-	to_hex(const bytes& value)
-	{
-		string ret;
-
-		for (byte *tmp = value.get(); tmp < value.get() + value.size(); ++tmp) {
-			ret += (*tmp < 10 ? *tmp + '0' : *tmp - 10 + 'a'); 		} 		return ret; 	} 	bytes 	from_hex(const string& hex) 	{ 		string ret; 		for(string::const_iterator it = hex.begin(); it != hex.end(); ++it) { 			char x = tolower(*it); 			if (!isdigit(x) && (!isalpha(x) || x > 'f'))
-				throw invalid_argument(string("All characters must be in [0-9a-f]; invalid: ") + x);
-
-			ret += isdigit(x) ? x - '0' : x - 'a' + 10;
-		}
-
-		return bytes(ret);
+void check_err(gcry_error_t a, const char* ( getError)(gcry_error_t)) {
+	if (a) {
+		std::cerr << getError(a) << std::endl;
 	}
+}
 
-	bytes
-	gen_random(size_t size, random_level level)
-	{
-		bytes buf(size);
-
-		gcry_control(GCRYCTL_FAST_POLL, NULL);
-		gcry_randomize(buf.get(), size, gcry_random_level(level));
-
-		return buf;
+string to_hex(const bytes& value) {
+	string ret;
+	for (bytes::const_iterator it = value.begin(); it != value.end(); ++it) {
+		ret += (*it < 10 ? *it + '0' : *it - 10 + 'a');
 	}
+	return ret;
+}
 
-	blockcipher::blockcipher(blk_cipher cipher, blk_cipher_mode mode,
-			const bytes& key, const bytes& initvec, bool secmem) :
-		cipher_(cipher), mode_(mode), key_(key),
-		initvec_(initvec), secmem_(secmem)
-	{
-		init_(cipher, mode, secmem);
+const bytes from_hex(const string& hex) {
+	bytes ret;
+	for (string::const_iterator it = hex.begin(); it != hex.end(); ++it) {
+		char x = tolower(*it);
+		if (!isdigit(x) && (!isalpha(x) || x > 'f'))
+			throw invalid_argument(
+					string("All characters must be in [0-9a-f]; invalid: ") + x);
+
+		ret.push_back(isdigit(x) ? x - '0' : x - 'a' + 10);
 	}
+	return ret;
+}
 
-	blockcipher::blockcipher(blk_cipher cipher, blk_cipher_mode mode,
-			bool secmem) :
-		cipher_(cipher), mode_(mode), secmem_(secmem)
-	{
-		keylen_ = gcry_cipher_get_algo_keylen(cipher);
-		blklen_ = gcry_cipher_get_algo_blklen(cipher);
+bytes gen_random(size_t size, random_level level) {
+	bytes buf;
+	buf.resize(size, '\0');
 
-		key_ = gen_random(keylen_, VERY_STRONG);
-		initvec_ = gen_random(blklen_, VERY_STRONG);
+	gcry_control(GCRYCTL_FAST_POLL, NULL);
+	gcry_randomize(buf.data(), size, gcry_random_level(level));
 
-		init_(cipher, mode, secmem);
-	}
+	return buf;
+}
 
-	void
-	blockcipher::reload()
-	{
-		gcry_cipher_ctl(cipherhd_, GCRYCTL_RESET, NULL, 0);
+blockcipher::blockcipher(blk_cipher cipher, blk_cipher_mode mode,
+		const bytes& key, const bytes& initvec, bool secmem) :
+	cipher_(cipher), mode_(mode), key_(key), initvec_(initvec), secmem_(secmem) {
+	init_(cipher, mode, secmem);
+}
 
-		check_err(gcry_cipher_setiv(cipherhd_, initvec_.get(), blklen_), gcry_strerror);
+blockcipher::blockcipher(blk_cipher cipher, blk_cipher_mode mode, bool secmem) :
+	cipher_(cipher), mode_(mode), secmem_(secmem) {
+	keylen_ = gcry_cipher_get_algo_keylen(cipher);
+	blklen_ = gcry_cipher_get_algo_blklen(cipher);
 
-		check_err(gcry_cipher_setkey(cipherhd_, key_.get(), keylen_), gcry_strerror);
-	}
+	key_ = gen_random(keylen_, WEAK);
+	initvec_ = gen_random(blklen_, WEAK);
 
-	void
-	blockcipher::encrypt(const bytes& value)
-	{
-		bytes out(value.size());
+	init_(cipher, mode, secmem);
+}
 
-		check_err(gcry_cipher_encrypt(cipherhd_, out.get(), out.size(),
-				value.get(), value.size()), gcry_strerror);
+void blockcipher::reload() {
+	gcry_cipher_ctl(cipherhd_, GCRYCTL_RESET, NULL, 0);
 
-		buf_ = out;
-	}
+	check_err(gcry_cipher_setiv(cipherhd_, initvec_.data(), blklen_),
+			gcry_strerror);
 
-	void
-	blockcipher::encrypt(const string& value)
-	{
-		bytes out(value.size());
+	check_err(gcry_cipher_setkey(cipherhd_, key_.data(), keylen_),
+			gcry_strerror);
+}
 
-		check_err(gcry_cipher_encrypt(cipherhd_, out.get(), out.size(),
-				value.c_str(), value.size()), gcry_strerror);
+void blockcipher::encrypt(const bytes& value) {
+	byte* out = new byte[value.size()];
 
-		buf_ = out;
-	}
+	check_err(
+			gcry_cipher_encrypt(cipherhd_, out, value.size(), value.data(),
+					value.size()), gcry_strerror);
 
-	void
-	blockcipher::decrypt(const bytes& value)
-	{
-		reload();
+	buf_.assign(out, out + value.size());
+}
 
-		bytes out(value.size());
+void blockcipher::encrypt(const string& value) {
+	byte* out = new byte[value.size()+10];
 
-		check_err(gcry_cipher_decrypt(cipherhd_, out.get(), out.size(),
-				value.get(), value.size()), gcry_strerror);
+	check_err(
+			gcry_cipher_encrypt(cipherhd_, out, value.size()+10, value.c_str(),
+					value.size()), gcry_strerror);
 
-		buf_ = out;
-	}
+	std::copy(out, out + value.size(), std::back_inserter(buf_));
+}
 
-	void
-	blockcipher::decrypt(const string& value)
-	{
-		reload();
+void blockcipher::decrypt(const bytes& value) {
+	reload();
 
-		bytes out(value.size());
+	byte* out = new byte[value.size()];
 
-		check_err(gcry_cipher_decrypt(cipherhd_, out.get(), out.size(),
-				value.c_str(), value.size()), gcry_strerror);
+	check_err(
+			gcry_cipher_decrypt(cipherhd_, out, value.size(), value.data(),
+					value.size()), gcry_strerror);
 
-		buf_ = out;
-	}
+	buf_.assign(out, out + value.size());
+}
 
-	void
-	blockcipher::secretkey(const bytes& value)
-	{
-		key_ = value;
-	}
+void blockcipher::decrypt(const string& value) {
+	reload();
 
-	void
-	blockcipher::secretkey(const string& value)
-	{
-		key_ = from_hex(value);
-	}
+	byte* out = new byte[value.size()];
 
-	void
-	blockcipher::iv(const bytes& value)
-	{
-		initvec_ = value;
-	}
+	check_err(
+			gcry_cipher_decrypt(cipherhd_, out, value.size(), value.c_str(),
+					value.size()), gcry_strerror);
 
-	void
-	blockcipher::iv(const string& value)
-	{
-		initvec_ = from_hex(value);
-	}
+	buf_.assign(out, out + value.size());
+}
 
-	string
-	blockcipher::secretkey()
-	{
-		return to_hex(key_);
-	}
+void blockcipher::secretkey(const bytes& value) {
+	key_ = value;
+}
 
-	string
-	blockcipher::iv()
-	{
-		return to_hex(initvec_);
-	}
+void blockcipher::secretkey(const string& value) {
+	key_ = from_hex(value);
+}
 
-	const bytes&
-	blockcipher::final() const
-	{
-		return buf_;
-	}
+void blockcipher::iv(const bytes& value) {
+	initvec_ = value;
+}
 
-	void
-	blockcipher::init_(blk_cipher cipher, blk_cipher_mode mode, bool secmem)
-	{
-		keylen_ = gcry_cipher_get_algo_keylen(cipher);
-		blklen_ = gcry_cipher_get_algo_blklen(cipher);
+void blockcipher::iv(const string& value) {
+	initvec_ = from_hex(value);
+}
 
-		if (blklen_ != initvec_.size())
-			throw runtime_error("IV size must be: " );
+string blockcipher::secretkey() {
+	return to_hex(key_);
+}
 
-		if (keylen_ != key_.size())
-			throw runtime_error("Key size must be: " );
+string blockcipher::iv() {
+	return to_hex(initvec_);
+}
 
-		if (secmem)
-			gcry_control(GCRYCTL_INIT_SECMEM, SECMEM_SIZE, 0);
+const bytes&
+blockcipher::final() const {
+	return buf_;
+}
 
-		check_err(gcry_cipher_open(&cipherhd_, cipher, mode,
-				secmem ? GCRY_CIPHER_SECURE : 0), gcry_strerror);
+void blockcipher::init_(blk_cipher cipher, blk_cipher_mode mode, bool secmem) {
+	keylen_ = gcry_cipher_get_algo_keylen(cipher);
+	blklen_ = gcry_cipher_get_algo_blklen(cipher);
 
-		reload();
-	}
+	if (blklen_ != initvec_.size())
+		throw runtime_error("IV size must be: ");
 
-	blockcipher::~blockcipher()
-	{
-		gcry_cipher_close(cipherhd_);
+	if (keylen_ != key_.size())
+		throw runtime_error("Key size must be: ");
 
-		if (secmem_)
-			gcry_control(GCRYCTL_TERM_SECMEM, 0);
-	}
+	if (secmem)
+		gcry_control(GCRYCTL_INIT_SECMEM, SECMEM_SIZE, 0);
+
+	check_err(
+			gcry_cipher_open(&cipherhd_, cipher, mode,
+					secmem ? GCRY_CIPHER_SECURE : 0), gcry_strerror);
+
+	reload();
+}
+
+blockcipher::~blockcipher() {
+	gcry_cipher_close(cipherhd_);
+
+	if (secmem_)
+		gcry_control(GCRYCTL_TERM_SECMEM, 0);
+}
 
 } // namespace crypto

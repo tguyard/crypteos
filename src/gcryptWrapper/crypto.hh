@@ -5,7 +5,7 @@
 #include <exception>
 #include <stdexcept>
 #include <string>
-#include <cstring>
+#include <vector>
 
 #include <gcrypt.h>
 
@@ -19,10 +19,8 @@ namespace crypto
 	using std::shared_ptr;
 	using std::string;
 
-	template <typename T = void> class alloc_ptr;
-
 	typedef unsigned char byte;
-	typedef alloc_ptr<byte> bytes;
+	typedef std::vector<byte> bytes;
 
 	static const int SECMEM_SIZE = 16384;
 
@@ -47,96 +45,7 @@ namespace crypto
 		VERY_STRONG = GCRY_VERY_STRONG_RANDOM
 	};
 
-	bytes gen_random(size_t size, random_level level);
-
-	/**
-	 * Utility wrapper around shared_ptr to facilitate working with C APIs,
-	 * C strings, and all objects created using alloc family.
-	 *
-	 * Calls free() when it the last instance is destroyed.
-	 */
-	template <typename T>
-	class alloc_ptr : public shared_ptr<T>
-	{
-	public:
-		typedef void (*release_fn)(T);
-		typedef void *(*alloc_fn)(size_t);
-		typedef void *(*alloc2_fn)(size_t, size_t);
-
-		alloc_ptr()
-		{}
-
-		alloc_ptr(size_t len, alloc_fn alloc_func = malloc,
-				release_fn release = NULL) throw()
-			: shared_ptr<T>((T*) alloc_func(sizeof(T) * len), free),
-			len(len), release_(release)
-		{
-			if (this->get() == NULL)
-				throw std::bad_alloc();
-		}
-
-		alloc_ptr(size_t len, alloc2_fn alloc_func,
-				release_fn release = NULL) throw()
-			: shared_ptr<T>((T*) alloc_func(len, sizeof(T)), free),
-			len(len), release_(release)
-		{
-			if (this->get() == NULL)
-				throw std::bad_alloc();
-		}
-
-		explicit alloc_ptr(T* ptr, size_t len,
-				release_fn release = NULL) throw()
-			: shared_ptr<T>(ptr, free), len(len), release_(release)
-		{
-			if (this->get() == NULL)
-				throw std::bad_alloc();
-		}
-
-		alloc_ptr(const string& value, alloc_fn alloc_func = malloc,
-				release_fn release = NULL) throw()
-			: shared_ptr<T>((T*) alloc_func(sizeof(T) * value.size()), free),
-			len(value.size()), release_(release)
-		{
-			if (this->get() == NULL)
-				throw std::bad_alloc();
-
-			memcpy(this->get(), value.c_str(), len);
-		}
-
-		alloc_ptr(const string& value, alloc2_fn alloc_func,
-				release_fn release = NULL) throw()
-			: shared_ptr<T>((T*) alloc_func(value.size(), sizeof(T)), free),
-			len(value.size()), release_(release)
-		{
-			if (this->get() == NULL)
-				throw std::bad_alloc();
-
-			memcpy(this->get(), value.c_str(), len);
-		}
-
-		void
-		release()
-		{
-			if (this->get()) {
-				if (release_ && *this->get())
-					release_(*this->get());
-
-				free(this->get());
-			}
-		}
-
-		~alloc_ptr()
-		{
-			this->release();
-		}
-
-		size_t length() const throw() { return len; }
-		size_t size() const throw() { return len; }
-
-	private:
-		size_t len;
-		release_fn release_;
-	};
+	void gen_random(bytes& array, random_level level);
 
 	class blockcipher {
 	public:
