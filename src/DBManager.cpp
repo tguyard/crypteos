@@ -20,7 +20,6 @@ DBManager::DBManager(const std::string& password, const std::string& dbfile) :
 		std::ifstream file(dbfile.c_str(), std::ios::in);
 		if (!file) {
 			createDBFile(password, dbfile);
-			encryptor = new Encryptor(password, salt);
 		} else {
 			readDBFile(password, file);
 			file.close();
@@ -40,8 +39,10 @@ void DBManager::createDBFile(const std::string& password, const std::string& dbf
 		return;
 	}
 	salt = PasswordManager::generatePassword("", 50);
+	encryptor = new Encryptor(password, salt);
+	challenge = encryptor->encrypt(PasswordManager::generatePassword("", 50));
 	file << salt << "\n";
-	file << PasswordManager::generatePassword("", 50) << "\n";
+	file << challenge << "\n";
 	file.close();
 }
 
@@ -58,7 +59,6 @@ void DBManager::readDBFile(const std::string& password, std::ifstream& file) {
 	encryptor = new Encryptor(password, salt);
 
 	// Try to decrypt the simple challenge string
-	std::string challenge;
 	getline(file, challenge);
 	if (challenge.empty()) {
 		parseError = true;
@@ -156,6 +156,7 @@ bool DBManager::applyChanges() {
 	}
 
 	file << salt << "\n";
+	file << challenge << "\n";
 	for (DB::const_iterator it = values.begin(); it != values.end(); ++it) {
 		try {
 			file << encryptor->encrypt(it->first) << " " << it->second << std::endl;

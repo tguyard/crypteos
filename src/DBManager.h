@@ -54,6 +54,7 @@ private:
 	DB values;
 	std::string dbfile;
 	std::string salt;
+	std::string challenge;
 	bool parseError;
 
 };

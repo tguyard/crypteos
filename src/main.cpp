@@ -27,20 +27,17 @@ int main(int argc, char **argv) {
 	po::options_description optionsAdd("Add keys");
 	optionsAdd.add_options()//
 	("add,a", po::value<std::string>(), "Add a service. (use the --key switch to input the key, or a random one will be generated).")//
-	("key,k", po::value<std::string>(), "Add a key on a specified service (use the --add switch to specify the service).");
+	("key,k", po::value<std::string>()->implicit_value(""), "Add a key on a specified service (use the --add switch to specify the service).");
 
 	po::options_description cmdline_options;
 	cmdline_options.add(optionsGeneric).add(optionsConfigure).add(optionsGet).add(optionsAdd);
 	po::options_description visible("Allowed options");
 	visible.add(optionsGeneric).add(optionsConfigure).add(optionsGet).add(optionsAdd);
 
-	po::positional_options_description pd;
-	pd.add("file", 1);
-
 	po::variables_map options;
 	try {
 		// Parse command line
-		po::parsed_options parsed = po::command_line_parser(argc, argv).options(visible).positional(pd).run();
+		po::parsed_options parsed = po::command_line_parser(argc, argv).options(visible).run();
 		po::store(parsed, options);
 		po::notify(options);
 	} catch (std::logic_error & error) {
@@ -76,14 +73,20 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 	if (options.count("add") && options.count("key")) {
-		manager.addKey(options["add"].as<std::string> (), options["key"].as<std::string> ());
-		manager.applyChanges();
-		return 0;
+		std::string key = options["key"].as<std::string> ();
+		if (key.empty()) {
+			key = PasswordManager::askPassword("Password to store ? ");
+		}
+		if (!manager.addKey(options["add"].as<std::string> (), key)){
+			return -1;
+		}
+		return manager.applyChanges();
 	}
 	if (options.count("add")) {
-		manager.addKey(options["add"].as<std::string> (), PasswordManager::generatePassword("&@!", 12));
-		manager.applyChanges();
-		return 0;
+		if (!manager.addKey(options["add"].as<std::string> (), PasswordManager::generatePassword("&@!", 12))) {
+			return -1;
+		}
+		return manager.applyChanges();
 	}
 
 	std::cerr << visible << std::endl;
