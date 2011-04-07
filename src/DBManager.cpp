@@ -16,7 +16,6 @@ DBManager::DBManager(const std::string& password, const std::string& dbfile) :
 	parseError = false;
 
 	try {
-
 		std::ifstream file(dbfile.c_str(), std::ios::in);
 		if (file) {
 			getline(file, salt);
@@ -40,13 +39,14 @@ DBManager::DBManager(const std::string& password, const std::string& dbfile) :
 			}
 		} else {
 			std::cout << "File not found! Creating a new one." << std::endl;
-			std::ofstream file(dbfile, std::ios::out);
+			std::ofstream file(dbfile.c_str(), std::ios::out);
 			if (!file) {
 				std::cerr << "Cannot open the current dbfile for writing. Modifications are discarded." << std::endl;
 				return;
 			}
 			file << "plopsidbqisdcbhsdqchib" << "\n";
 			file.close();
+			encryptor = new Encryptor(password, salt);
 		}
 	} catch (CryptoPP::Exception& e) {
 		parseError = true;
@@ -62,9 +62,17 @@ DBManager::~DBManager() {
 }
 
 std::string DBManager::getKey(const std::string& serviceName) {
-	DB::const_iterator findIt = values.find(serviceName);
-	if (findIt != values.end()) {
-		return encryptor->decrypt(findIt->second);
+	if (encryptor == NULL) {
+		std::cerr << "Get key ignored." << serviceName << std::endl;
+		return "";
+	}
+	try {
+		DB::const_iterator findIt = values.find(serviceName);
+		if (findIt != values.end()) {
+			return encryptor->decrypt(findIt->second);
+		}
+	} catch (CryptoPP::Exception& e) {
+		std::cerr << e.what() << std::endl;
 	}
 	std::cerr << "Service not found: " << serviceName << std::endl;
 	return "";
@@ -79,11 +87,19 @@ std::vector<std::string> DBManager::getServiceNames() {
 }
 
 void DBManager::addKey(const std::string& serviceName, const std::string& key) {
+	if (encryptor == NULL) {
+		std::cerr << "Add key ignored." << serviceName << std::endl;
+		return;
+	}
 	if (parseError) {
 		std::cerr << "Due to parse error, we are read only. Nothing to do..." << std::endl;
 		return;
 	}
-	values.insert(std::make_pair(serviceName, encryptor->encrypt(key)));
+	try {
+		values.insert(std::make_pair(serviceName, encryptor->encrypt(key)));
+	} catch (CryptoPP::Exception& e) {
+		std::cerr << e.what() << std::endl;
+	}
 }
 
 void DBManager::applyChanges() {
@@ -95,7 +111,7 @@ void DBManager::applyChanges() {
 		std::cerr << "Cannot remove the current dbfile to create a new one. Modifications are discarded." << std::endl;
 		return;
 	}
-	std::ofstream file(dbfile, std::ios::out);
+	std::ofstream file(dbfile.c_str(), std::ios::out);
 	if (!file) {
 		std::cerr << "Cannot open the current dbfile for writing. Modifications are discarded." << std::endl;
 		return;
@@ -103,10 +119,14 @@ void DBManager::applyChanges() {
 
 	file << salt << "\n";
 	for (DB::const_iterator it = values.begin(); it != values.end(); ++it) {
-		file << encryptor->encrypt(it->first) << " " << it->second << std::endl;
+		try {
+			file << encryptor->encrypt(it->first) << " " << it->second << std::endl;
+		} catch (CryptoPP::Exception& e) {
+			std::cerr << "Error when saving: " << it->first << std::endl;
+			std::cerr << e.what() << std::endl;
+		}
 	}
 	file.close();
-
 }
 
 //END Of file : ./DBManager.cpp

@@ -1,4 +1,0 @@
-/home/thomas/CryptPasswords/projects/src/CMakeFiles/crypto.dir
-/home/thomas/CryptPasswords/projects/CMakeFiles/doc.dir
-/home/thomas/CryptPasswords/projects/CMakeFiles/package.dir
-/home/thomas/CryptPasswords/projects/CMakeFiles/uninstall.dir

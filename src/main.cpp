@@ -1,40 +1,13 @@
-// g++ -g3 -ggdb -O0 -DDEBUG -I/usr/include/cryptopp Driver.cpp -o Driver.exe -lcryptopp -lpthread
-// g++ -g -O2 -DNDEBUG -I/usr/include/cryptopp Driver.cpp -o Driver.exe -lcryptopp -lpthread
-
-#include "crypto++/osrng.h"
-using CryptoPP::AutoSeededRandomPool;
-
 #include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
-
 #include <string>
-using std::string;
-
-#include <cstdlib>
-using std::exit;
-
-#include "crypto++/cryptlib.h"
-using CryptoPP::Exception;
-
-#include "crypto++/hex.h"
-using CryptoPP::HexEncoder;
-using CryptoPP::HexDecoder;
-
-#include "crypto++/filters.h"
-using CryptoPP::StringSink;
-using CryptoPP::StringSource;
-using CryptoPP::StreamTransformationFilter;
-
-#include "crypto++/aes.h"
-using CryptoPP::AES;
-
-#include "crypto++/modes.h"
-using CryptoPP::ECB_Mode;
-
 #include <boost/program_options.hpp>
 #include "DBManager.h"
+
+#ifdef HAVE_UNISTD_H
+#include "unistd.h"
+#elif HAVE_CONIO_H
+#include "conio.h"
+#endif
 
 namespace po = boost::program_options;
 
@@ -88,7 +61,6 @@ int main(int argc, char **argv) {
 	std::string password;
 	std::cout << "Need the encryption passphrase: ";
 	std::cin >> password;
-	std::cout << std::endl;
 	DBManager manager(password, filename);
 
 	if (options.count("list")) {
