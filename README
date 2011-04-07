@@ -29,3 +29,10 @@ To compile this project you need:
 On debian based distribution you can use:
 sudo apt-get install cmake libcrypto++-dev libboost-program-options-dev
 
+Compiling
+=========
+
+mkdir build
+../configure
+make
+sudo make install

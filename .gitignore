@@ -1,2 +1,4 @@
 **/cmake_uninstall.cmake
 projects/**
+build/
+doc/doxy.config
