@@ -11,32 +11,35 @@
 #include "PasswordManager.h"
 
 //using namespace std;
-DBManager::DBManager(const std::string& password, const std::string& dbfile) :
+DBManager::DBManager(const std::string& dbfile) :
 	dbfile(dbfile) {
 	encryptor = NULL;
 	parseError = false;
+}
 
+DBManager::ERROR DBManager::initialize(const std::string& password) {
+	ERROR rtn = UNKNOWN_ERROR;
 	try {
 		std::ifstream file(dbfile.c_str(), std::ios::in);
 		if (!file) {
-			createDBFile(password, dbfile);
+			rtn = createDBFile(password, dbfile);
 		} else {
-			readDBFile(password, file);
+			rtn = readDBFile(password, file);
 			file.close();
 		}
 	} catch (CryptoPP::Exception& e) {
-		parseError = true;
+		rtn = WRONG_PASSWORD;
 		std::cerr << "Encryption error !" << std::endl;
 		std::cerr << e.GetWhat() << std::endl;
 	}
+	return rtn;
 }
-
-void DBManager::createDBFile(const std::string& password, const std::string& dbfile) {
+DBManager::ERROR DBManager::createDBFile(const std::string& password, const std::string& dbfile) {
 	std::cout << "File not found! Creating a new one." << std::endl;
 	std::ofstream file(dbfile.c_str(), std::ios::out);
 	if (!file) {
 		std::cerr << "Cannot open the current dbfile for writing. Modifications are discarded." << std::endl;
-		return;
+		return WRONG_DB_FILE;
 	}
 	salt = PasswordManager::generatePassword("", 50);
 	encryptor = new Encryptor(password, salt);
@@ -44,15 +47,16 @@ void DBManager::createDBFile(const std::string& password, const std::string& dbf
 	file << salt << "\n";
 	file << challenge << "\n";
 	file.close();
+	return OK;
 }
 
-void DBManager::readDBFile(const std::string& password, std::ifstream& file) {
+DBManager::ERROR DBManager::readDBFile(const std::string& password, std::ifstream& file) {
 	// Get the salt
 	getline(file, salt);
 	if (salt.empty()) {
 		parseError = true;
 		std::cerr << "Wrong db file. Salt not found." << std::endl;
-		return; // Salt not found is fatal.
+		return WRONG_DB_FILE; // Salt not found is fatal.
 	}
 
 	// We have the salt we can create an ecryptor
@@ -63,14 +67,14 @@ void DBManager::readDBFile(const std::string& password, std::ifstream& file) {
 	if (challenge.empty()) {
 		parseError = true;
 		std::cerr << "Wrong db file. Challenge string not found." << std::endl;
-		return; // Challenge not found is fatal.
+		return WRONG_DB_FILE; // Challenge not found is fatal.
 	}
 	try {
 		encryptor->decrypt(challenge);
 	} catch (CryptoPP::Exception& e) {
 		parseError = true;
 		std::cerr << "Error: Are you sure the password is right? " << std::endl;
-		return; // Challenge failed is fatal.
+		return WRONG_PASSWORD; // Challenge failed is fatal.
 	}
 
 	// Perform the read...
@@ -85,6 +89,7 @@ void DBManager::readDBFile(const std::string& password, std::ifstream& file) {
 		std::string key = line.substr(firstSpace + 1, line.length());
 		values.insert(std::make_pair(encryptor->decrypt(service), key));
 	}
+	return OK;
 }
 
 DBManager::~DBManager() {

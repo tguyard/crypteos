@@ -31,7 +31,7 @@ using CryptoPP::PKCS5_PBKDF2_HMAC;
 #include <iostream>
 
 static const unsigned int ITERATIONS = 100000;
-static const unsigned int AES_SIZE = AES::DEFAULT_KEYLENGTH;
+static const unsigned int AES_SIZE = AES::MAX_KEYLENGTH;
 
 Encryptor::Encryptor(const std::string& pass, const std::string& theSalt) {
 	// Initialize the random pool

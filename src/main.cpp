@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
 
 	po::options_description optionsConfigure("Configuration options");
 	optionsConfigure.add_options()//
-	("file,f", po::value<std::string>()->default_value("./keys.cryped"), "Specify a file containing the encrypted password.");
+	("file,f", po::value<std::string>()->default_value("./keysdb.aes"), "Specify a file containing the encrypted password.");
 
 	po::options_description optionsGet("Get Keys");
 	optionsGet.add_options()//
@@ -53,10 +53,20 @@ int main(int argc, char **argv) {
 		std::cout << "Version 0.9" << std::endl;
 		return 0;
 	}
+	if (!(options.count("list") || options.count("get") || options.count("add") || options.count("key"))) {
+		std::cerr << "I am waiting for at least one option ..." << std::endl;
+		std::cerr << visible << std::endl;
+		return -1;
+	}
 
 	std::string filename = options["file"].as<std::string> ();
 
-	DBManager manager(PasswordManager::askPassword("Encryption password: "), filename);
+	DBManager manager(filename);
+	DBManager::ERROR error = manager.initialize(PasswordManager::askPassword("Encryption password: "));
+	if (error != DBManager::OK){
+		std::cerr << "Error. exiting." << std::endl;
+		return error;
+	}
 
 	if (options.count("list")) {
 		std::vector<std::string> services = manager.getServiceNames();
@@ -77,7 +87,7 @@ int main(int argc, char **argv) {
 		if (key.empty()) {
 			key = PasswordManager::askPassword("Password to store ? ");
 		}
-		if (!manager.addKey(options["add"].as<std::string> (), key)){
+		if (!manager.addKey(options["add"].as<std::string> (), key)) {
 			return -1;
 		}
 		return manager.applyChanges();
