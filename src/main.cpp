@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
 	if (options["hidden"].as<bool> ()) {
 		password = PasswordManager::askPasswordHidden("Encryption password: ");
 	} else {
-		password = PasswordManager::askPassword("Encryption password: ");
+		password = PasswordManager::askPassword();
 		password.size();
 	}
 	DBManager::ERROR error = manager.initialize(password);
@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
 			if (options["hidden"].as<bool> ()) {
 				key = PasswordManager::askPasswordHidden("Password to store ? ");
 			} else {
-				key = PasswordManager::askPassword("Password to store ? ");
+				key = PasswordManager::askPassword();
 			}
 		}
 		if (!manager.addKey(options["add"].as<std::string> (), key)) {

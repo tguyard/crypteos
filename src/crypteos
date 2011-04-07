@@ -1,0 +1,104 @@
+#!/bin/bash
+
+
+doGetPassword(){
+    echo $PASSWORD | crypteos-bin --hidden false --get "$1" 
+}
+
+doListPassword(){
+    echo $PASSWORD | crypteos-bin --hidden false --list
+}
+
+listPassword(){
+    list=( $(doListPassword) )
+    for i in $(seq 0 $(( ${#list[@]} - 1 )) ) ; do
+        echo "$i -> ${list[$i]}"
+    done
+    read -p "Type the number of the item you want to see or just <enter>: " number
+
+    if [ -n "$number" ] && [ "$number" -lt "${#list[@]}" ] 
+    then
+        doGetPassword "${list[$number]}"
+    fi
+
+    echo
+}
+
+getPassword(){
+    read -p "Service name: " service
+    doGetPassword
+    echo
+}
+
+addPassword(){
+    read -p "What is the new service name? " new_service
+    stty -echo
+    read -p "What is the new password to store? " new_password
+    echo
+    stty echo
+
+    echo $PASSWORD | crypteos-bin --hidden false --add "$new_service" --key "$new_password" 
+    echo
+}
+
+menu(){
+    cat << EOF
+    1 -> list all the the existing services.
+    2 -> get a password by its service name.
+    3 -> add a new password.
+
+    q -> exit.
+EOF
+read reponse
+echo
+
+case "$reponse" in 
+    1)
+        listPassword
+        menu
+        ;;
+    2)
+        getPassword
+        menu
+        ;;
+    3)
+        addPassword
+        menu
+        ;;
+    q)
+        exit 0
+        ;;
+    *)
+        echo "I did not understood: $reponse"
+        menu
+        ;;
+esac
+
+}
+
+askMasterPassword(){
+    stty -echo
+    read -p "I need your password: " PASSWORD
+    echo
+    stty echo
+    
+    doListPassword 2>&1 >/dev/null
+    if [ $? != 0 ] 
+    then
+        echo "Wrong passwords."
+        askMasterPassword
+    fi
+}
+
+cat << EOF
+Welcome to the crypteos interactive program.
+I will ask you some question, if your answers are correct,
+you may be able to securely store an retreave your passwords.
+
+EOF
+
+
+askMasterPassword
+echo
+
+menu

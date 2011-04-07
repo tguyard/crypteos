@@ -27,7 +27,7 @@ private:
 	// Public Methods ////////////////////////////////////////// Public Methods //
 public:
 	static std::string askPasswordHidden(const std::string& message);
-	static std::string askPassword(const std::string& message);
+	static std::string askPassword();
 	static std::string generatePassword(const std::string& specialCharAllowed, unsigned int length);
 
 private:

@@ -65,14 +65,13 @@ std::string PasswordManager::askPasswordHidden(const std::string& message) {
 	}
 	return password;
 }
-std::string PasswordManager::askPassword(const std::string& message) {
+std::string PasswordManager::askPassword() {
 	std::string password;
-	std::cout << message;
 	std::cin >> password;
 	std::string error = checkPasswordConstraints(password);
 		if (!error.empty()) {
 			std::cerr << error << std::endl;
-			askPassword(message);
+			askPassword();
 		}
 		return password;
 }

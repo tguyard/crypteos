@@ -1,5 +1,5 @@
 
-SET(EXE_NAME crypteos)
+SET(EXE_NAME crypteos-bin)
 INCLUDE(Utils)
 
 FIND_PACKAGE(cryptopp)
