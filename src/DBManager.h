@@ -16,36 +16,45 @@
 #include <string>
 #include <map>
 
-class DBManager : public boost::noncopyable
-{
-// Constructor destructor ////////////////////////////////////////////////////
+/**
+ * The DB file is of the following form:
+ * First line: The salt string
+ * Second line: An encrypted random string (to challenge the password)
+ * then: each line is a pair of encrypted service/password separated by a space.
+ */
+class DBManager: public boost::noncopyable {
+	// Constructor destructor ////////////////////////////////////////////////////
 public:
-    /** @brief */
-    DBManager(const std::string& password, const std::string& dbfile);
-    /** @brief */
-    /*final*/ ~DBManager();
+	/** @brief */
+	DBManager(const std::string& password, const std::string& dbfile);
+	/** @brief */
+	/*final*/
+	~DBManager();
 
-// Public Methods ////////////////////////////////////////// Public Methods //
+	// Public Methods ////////////////////////////////////////// Public Methods //
 public:
-    std::string getKey(const std::string& serviceName);
-    std::vector<std::string> getServiceNames();
+	std::string getKey(const std::string& serviceName);
+	std::vector<std::string> getServiceNames();
 
-    void addKey(const std::string& serviceName, const std::string& key);
+	bool addKey(const std::string& serviceName, const std::string& key);
 
-    void applyChanges();
+	bool applyChanges();
 
 private:
-    void read();
-    void write();
+	void createDBFile(const std::string& password, const std::string& dbfile);
+	/**
+	 * Create the Encryptor.
+	 */
+	void readDBFile(const std::string& password, std::ifstream& dbfile);
 
-// Attributes /////////////////////////////////////////////////// Attributes //
+	// Attributes /////////////////////////////////////////////////// Attributes //
 private:
-    typedef std::map<std::string/*names*/, std::string/*encrypted*/> DB;
-    Encryptor* encryptor;
-    DB values;
-    std::string dbfile;
-    std::string salt;
-    bool parseError;
+	typedef std::map<std::string/*names*/, std::string/*encrypted*/> DB;
+	Encryptor* encryptor;
+	DB values;
+	std::string dbfile;
+	std::string salt;
+	bool parseError;
 
 };
 

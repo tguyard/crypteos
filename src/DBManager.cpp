@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdio.h>
+#include "PasswordManager.h"
 
 //using namespace std;
 DBManager::DBManager(const std::string& password, const std::string& dbfile) :
@@ -17,41 +18,72 @@ DBManager::DBManager(const std::string& password, const std::string& dbfile) :
 
 	try {
 		std::ifstream file(dbfile.c_str(), std::ios::in);
-		if (file) {
-			getline(file, salt);
-			if (salt.empty()) {
-				parseError = true;
-				std::cerr << "Wrong db file. Salt not found." << std::endl;
-			} else {
-				encryptor = new Encryptor(password, salt);
-				std::string line;
-				while (getline(file, line)) {
-					std::size_t firstSpace = line.find_first_of(" ");
-					if (firstSpace <= 1 || firstSpace >= line.length() - 1) {
-						parseError = true;
-						std::cerr << "Wrong db file. Space not found or misplaced." << std::endl;
-					}
-					std::string service = line.substr(0, firstSpace);
-					std::string key = line.substr(firstSpace + 1, line.length());
-					values.insert(std::make_pair(encryptor->decrypt(service), key));
-				}
-				file.close();
-			}
-		} else {
-			std::cout << "File not found! Creating a new one." << std::endl;
-			std::ofstream file(dbfile.c_str(), std::ios::out);
-			if (!file) {
-				std::cerr << "Cannot open the current dbfile for writing. Modifications are discarded." << std::endl;
-				return;
-			}
-			file << "plopsidbqisdcbhsdqchib" << "\n";
-			file.close();
+		if (!file) {
+			createDBFile(password, dbfile);
 			encryptor = new Encryptor(password, salt);
+		} else {
+			readDBFile(password, file);
+			file.close();
 		}
 	} catch (CryptoPP::Exception& e) {
 		parseError = true;
-		std::cerr << "Cannot decrypt a service." << std::endl;
+		std::cerr << "Encryption error !" << std::endl;
 		std::cerr << e.GetWhat() << std::endl;
+	}
+}
+
+void DBManager::createDBFile(const std::string& password, const std::string& dbfile) {
+	std::cout << "File not found! Creating a new one." << std::endl;
+	std::ofstream file(dbfile.c_str(), std::ios::out);
+	if (!file) {
+		std::cerr << "Cannot open the current dbfile for writing. Modifications are discarded." << std::endl;
+		return;
+	}
+	salt = PasswordManager::generatePassword("", 50);
+	file << salt << "\n";
+	file << PasswordManager::generatePassword("", 50) << "\n";
+	file.close();
+}
+
+void DBManager::readDBFile(const std::string& password, std::ifstream& file) {
+	// Get the salt
+	getline(file, salt);
+	if (salt.empty()) {
+		parseError = true;
+		std::cerr << "Wrong db file. Salt not found." << std::endl;
+		return; // Salt not found is fatal.
+	}
+
+	// We have the salt we can create an ecryptor
+	encryptor = new Encryptor(password, salt);
+
+	// Try to decrypt the simple challenge string
+	std::string challenge;
+	getline(file, challenge);
+	if (challenge.empty()) {
+		parseError = true;
+		std::cerr << "Wrong db file. Challenge string not found." << std::endl;
+		return; // Challenge not found is fatal.
+	}
+	try {
+		encryptor->decrypt(challenge);
+	} catch (CryptoPP::Exception& e) {
+		parseError = true;
+		std::cerr << "Error: Are you sure the password is right? " << std::endl;
+		return; // Challenge failed is fatal.
+	}
+
+	// Perform the read...
+	std::string line;
+	while (getline(file, line)) {
+		std::size_t firstSpace = line.find_first_of(" ");
+		if (firstSpace <= 1 || firstSpace >= line.length() - 1) {
+			parseError = true;
+			std::cerr << "Wrong entry. Space not found or misplaced." << std::endl;
+		}
+		std::string service = line.substr(0, firstSpace);
+		std::string key = line.substr(firstSpace + 1, line.length());
+		values.insert(std::make_pair(encryptor->decrypt(service), key));
 	}
 }
 
@@ -86,35 +118,41 @@ std::vector<std::string> DBManager::getServiceNames() {
 	return vals;
 }
 
-void DBManager::addKey(const std::string& serviceName, const std::string& key) {
+bool DBManager::addKey(const std::string& serviceName, const std::string& key) {
 	if (encryptor == NULL) {
-		std::cerr << "Add key ignored." << serviceName << std::endl;
-		return;
+		std::cerr << "Add key ignored: " << serviceName << std::endl;
+		return false;
 	}
 	if (parseError) {
 		std::cerr << "Due to parse error, we are read only. Nothing to do..." << std::endl;
-		return;
+		return false;
 	}
 	try {
+		DB::iterator findIt = values.find(serviceName);
+		if (findIt != values.end()) {
+			values.erase(findIt);
+		}
 		values.insert(std::make_pair(serviceName, encryptor->encrypt(key)));
 	} catch (CryptoPP::Exception& e) {
 		std::cerr << e.what() << std::endl;
+		return false;
 	}
+	return true;
 }
 
-void DBManager::applyChanges() {
+bool DBManager::applyChanges() {
 	if (parseError) {
 		std::cerr << "Due to parse error, we are read only. Nothing to do..." << std::endl;
-		return;
+		return false;
 	}
 	if (std::remove(dbfile.c_str()) != 0) {
 		std::cerr << "Cannot remove the current dbfile to create a new one. Modifications are discarded." << std::endl;
-		return;
+		return false;
 	}
 	std::ofstream file(dbfile.c_str(), std::ios::out);
 	if (!file) {
 		std::cerr << "Cannot open the current dbfile for writing. Modifications are discarded." << std::endl;
-		return;
+		return false;
 	}
 
 	file << salt << "\n";
@@ -127,6 +165,6 @@ void DBManager::applyChanges() {
 		}
 	}
 	file.close();
+	return true;
 }
-
 //END Of file : ./DBManager.cpp

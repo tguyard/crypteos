@@ -34,18 +34,17 @@ static const unsigned int ITERATIONS = 100000;
 static const unsigned int AES_SIZE = AES::DEFAULT_KEYLENGTH;
 
 Encryptor::Encryptor(const std::string& pass, const std::string& theSalt) {
+	// Initialize the random pool
+	AutoSeededRandomPool prng;
 
 	Encryptor::byteString passphrase;
 	passphrase.assign(pass.begin(), pass.end());
 	Encryptor::byteString salt;
 	salt.assign(theSalt.begin(), theSalt.end());
 
-	// Initialize the random pool
-	AutoSeededRandomPool prng;
 
 	PKCS5_PBKDF2_HMAC<CryptoPP::SHA512> passToKey;
 	key = new byte[AES_SIZE];
-	std::cout << AES_SIZE << std::endl;
 	passToKey.DeriveKey(key, AES_SIZE, '\0', passphrase.c_str(),
 			passphrase.size(), salt.c_str(), salt.size(), ITERATIONS);
 
