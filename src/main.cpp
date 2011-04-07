@@ -70,7 +70,6 @@ int main(int argc, char **argv) {
 		password = PasswordManager::askPassword("Encryption password: ");
 		password.size();
 	}
-		std::cout << "||" << password << "||" << std::endl;
 	DBManager::ERROR error = manager.initialize(password);
 	if (error != DBManager::OK) {
 		std::cerr << "Error. exiting." << std::endl;
