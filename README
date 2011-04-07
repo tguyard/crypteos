@@ -8,13 +8,13 @@ Each password is associated with a service name (For example me@google.com ...).
 example:
 
 # list all the service with passords
-crypteos --list 
+crypteos-bin --list 
 
 # add a key
-crypteos --add "me@google.com" -k
+crypteos-bin --add "me@google.com" -k
 
 # get a key 
-crypteos --get "me@google.com"
+crypteos-bin --get "me@google.com"
 
 Each of the previous commands asks for a password.
 
