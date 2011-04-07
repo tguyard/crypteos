@@ -17,7 +17,8 @@ int main(int argc, char **argv) {
 
 	po::options_description optionsConfigure("Configuration options");
 	optionsConfigure.add_options()//
-	("file,f", po::value<std::string>()->default_value("./keysdb.aes"), "Specify a file containing the encrypted password.");
+	("file,f", po::value<std::string>()->default_value("./keysdb.aes"), "Specify a file containing the encrypted password.")//
+	("hidden,d", po::value<bool>()->default_value(true), "Hide the password when typing them.");
 
 	po::options_description optionsGet("Get Keys");
 	optionsGet.add_options()//
@@ -62,8 +63,16 @@ int main(int argc, char **argv) {
 	std::string filename = options["file"].as<std::string> ();
 
 	DBManager manager(filename);
-	DBManager::ERROR error = manager.initialize(PasswordManager::askPassword("Encryption password: "));
-	if (error != DBManager::OK){
+	std::string password;
+	if (options["hidden"].as<bool> ()) {
+		password = PasswordManager::askPasswordHidden("Encryption password: ");
+	} else {
+		password = PasswordManager::askPassword("Encryption password: ");
+		password.size();
+	}
+		std::cout << "||" << password << "||" << std::endl;
+	DBManager::ERROR error = manager.initialize(password);
+	if (error != DBManager::OK) {
 		std::cerr << "Error. exiting." << std::endl;
 		return error;
 	}
@@ -85,7 +94,11 @@ int main(int argc, char **argv) {
 	if (options.count("add") && options.count("key")) {
 		std::string key = options["key"].as<std::string> ();
 		if (key.empty()) {
-			key = PasswordManager::askPassword("Password to store ? ");
+			if (options["hidden"].as<bool> ()) {
+				key = PasswordManager::askPasswordHidden("Password to store ? ");
+			} else {
+				key = PasswordManager::askPassword("Password to store ? ");
+			}
 		}
 		if (!manager.addKey(options["add"].as<std::string> (), key)) {
 			return -1;

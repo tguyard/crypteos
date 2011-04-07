@@ -9,18 +9,42 @@
 #include "crypto++/osrng.h"
 using CryptoPP::AutoSeededRandomPool;
 
-#ifdef HAVE_UNISTD_H
-#include "unistd.h"
+#ifdef HAVE_TERMIOS_H
+#include <termios.h>
 #elif HAVE_CONIO_H
 #include "conio.h"
 #endif
 #include <iostream>
+#include <stdexcept>
 
-std::string PasswordManager::askPassword(const std::string& message) {
+std::string PasswordManager::askPasswordHidden(const std::string& message) {
 	std::string password;
-#ifdef HAVE_UNISTD_H
-	const char* pass = getpass(message.c_str());
-	password = pass;
+#ifdef HAVE_TERMIOS_H
+
+	struct termios oflags, nflags;
+	char pass[128];
+
+	/* disabling echo */
+	tcgetattr(fileno(stdin), &oflags);
+	nflags = oflags;
+	nflags.c_lflag &= ~ECHO;
+	nflags.c_lflag |= ECHONL;
+
+	if (tcsetattr(fileno(stdin), TCSANOW, &nflags) != 0) {
+		perror("tcsetattr");
+		throw std::runtime_error("Unknown error...");
+	}
+
+	std::cout << message;
+	fgets(pass, sizeof(pass), stdin);
+	password.assign(pass, pass + strlen(pass) - 1);
+
+	/* restore terminal */
+	if (tcsetattr(fileno(stdin), TCSANOW, &oflags) != 0) {
+		perror("tcsetattr");
+		throw std::runtime_error("Unknown error...");
+	}
+
 #elif HAVE_CONIO_H
 	char input = getch();
 	while (input != '\r')
@@ -37,9 +61,20 @@ std::string PasswordManager::askPassword(const std::string& message) {
 	std::string error = checkPasswordConstraints(password);
 	if (!error.empty()) {
 		std::cerr << error << std::endl;
-		askPassword(message);
+		askPasswordHidden(message);
 	}
 	return password;
+}
+std::string PasswordManager::askPassword(const std::string& message) {
+	std::string password;
+	std::cout << message;
+	std::cin >> password;
+	std::string error = checkPasswordConstraints(password);
+		if (!error.empty()) {
+			std::cerr << error << std::endl;
+			askPassword(message);
+		}
+		return password;
 }
 std::string PasswordManager::generatePassword(const std::string& specialCharAllowed, unsigned int length) {
 	AutoSeededRandomPool prng;
