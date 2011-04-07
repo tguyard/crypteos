@@ -68,12 +68,7 @@ std::string PasswordManager::askPasswordHidden(const std::string& message) {
 std::string PasswordManager::askPassword() {
 	std::string password;
 	std::cin >> password;
-	std::string error = checkPasswordConstraints(password);
-		if (!error.empty()) {
-			std::cerr << error << std::endl;
-			askPassword();
-		}
-		return password;
+    return password;
 }
 std::string PasswordManager::generatePassword(const std::string& specialCharAllowed, unsigned int length) {
 	AutoSeededRandomPool prng;
