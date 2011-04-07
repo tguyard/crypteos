@@ -1,0 +1,31 @@
+Description
+===========
+
+crypteos encrypt using the AES algotihm your passwords.
+It store the passwords in a unique text file.
+Each password is associated with a service name (For example me@google.com ...).
+
+example:
+
+# list all the service with passords
+crypteos --list 
+
+# add a key
+crypteos --add "me@google.com" -k
+
+# get a key 
+crypteos --get "me@google.com"
+
+Each of the previous commands asks for a password.
+
+
+To compile this project you need:
+================================
+
+- crypto++
+- boost_program-options
+- cmake (>=2.6)
+
+On debian based distribution you can use:
+sudo apt-get install cmake libcrypto++-dev libboost-program-options-dev
+
