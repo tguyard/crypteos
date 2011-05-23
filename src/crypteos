@@ -1,81 +1,84 @@
 #!/bin/bash
 
-IFS="
-"
+PASSWORD=
+DB_FILE_OPT=
+filter=/tmp/filteraefddaef
 
-doGetPassword(){
-    echo $PASSWORD | crypteos-bin --hidden false --get "$1" 
+doCrypteos(){
+    echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT $@
 }
 
-doListPassword(){
-    echo $PASSWORD | crypteos-bin --hidden false --list
+echo '#!/usr/bin/env perl
+
+use lib ($ENV{RLWRAP_FILTERDIR} or ".");
+use RlwrapFilter;
+use strict;
+
+my $filter = new RlwrapFilter;
+my $name = $filter -> name;
+my @commands = ("ls", "cat", "add","addExisting", "copy", "file", "help", "exit", "quit");
+my @services =  @ARGV;
+
+$filter -> completion_handler(\&complete);
+
+
+$filter -> run;
+
+sub complete {
+  my($line, $prefix, @completions) =@_;
+
+  my $nwords = scalar split /\s+/, $line;
+  $nwords++ unless $prefix;   # TAB at start of a new (empty) argument
+  if ($nwords <= 1) {
+    return  grep(/^$prefix/, @commands);
+  }
+
+  if ($nwords == 2) {
+    my $first = (split /\s+/, $line)[0];
+    if ($first eq "copy"){
+        return grep(/^$prefix/, @services);
+    }
+    if ($first eq "cat"){
+        return grep(/^$prefix/, @services);
+    }
+    if ($first eq "file") {
+        return grep(/^$prefix/, @completions);
+    }
+    return ();
+  }
+
+  return ();
 }
 
-listPassword(){
-    list=( $(doListPassword) )
-    for i in $(seq 0 $(( ${#list[@]} - 1 )) ) ; do
-        echo "$i -> ${list[$i]}"
-    done
-    read -p "Type the number of the item you want to see or just <enter>: " number
+' > $filter
+chmod u+x $filter
 
-    if [ -n "$number" ] && [ "$number" -lt "${#list[@]}" ] 
-    then
-        doGetPassword "${list[$number]}"
-    fi
-
-    echo
-}
-
-getPassword(){
-    read -p "Service name: " service
-    doGetPassword
-    echo
-}
-
-addPassword(){
-    read -p "What is the new service name? " new_service
-    stty -echo
-    read -p "What is the new password to store? " new_password
-    echo
-    stty echo
-
-    echo $PASSWORD | crypteos-bin --hidden false --add "$new_service" --key "$new_password" 
-    echo
-}
-
-menu(){
+help(){
     cat << EOF
-    1 -> list all the the existing services.
-    2 -> get a password by its service name.
-    3 -> add a new password.
+Commands:
 
-    q -> exit.
+help
+    This help.
+
+cat {service}
+    Get the password for this *serivice*.
+
+ls 
+    List all the existing services.
+
+add {service} 
+    Add a password for a service. If *password* is omitted then a new generated one is given.
+
+addExisting {service}
+    Add an already existing password for a service. The password will be asked durring the process.
+
+copy {service}
+    Copy to the clipbord the password for *service*. (Use xsel)
+
+file {file}
+    Change the db file.
+
 EOF
-read reponse
-echo
-
-case "$reponse" in 
-    1)
-        listPassword
-        menu
-        ;;
-    2)
-        getPassword
-        menu
-        ;;
-    3)
-        addPassword
-        menu
-        ;;
-    q)
-        exit 0
-        ;;
-    *)
-        echo "I did not understood: $reponse"
-        menu
-        ;;
-esac
-
 }
 
 askMasterPassword(){
@@ -84,7 +87,7 @@ askMasterPassword(){
     echo
     stty echo
     
-    doListPassword 2>&1 >/dev/null
+    services="$(doCrypteos --list "$2" | tr "\n" " " 2>/dev/null )" 
     if [ $? != 0 ] 
     then
         echo "Wrong passwords."
@@ -92,15 +95,53 @@ askMasterPassword(){
     fi
 }
 
-cat << EOF
-Welcome to the crypteos interactive program.
-I will ask you some question, if your answers are correct,
-you may be able to securely store an retreave your passwords.
+menu(){
+    while [ "$reponse" != exit ] ; do 
+        reponse="$(rlwrap -I -S 'crypteos> ' -pgreen -c -z "$filter $services" -o cat )"
 
-EOF
+        set -- $reponse 
+        case "$1" in 
+            help|h|\?)
+                help
+                ;;
+            copy)
+                doCrypteos --get "$2" | xsel
+                ;;
+            cat)
+                doCrypteos --get "$2"
+                ;;
+            ls)
+                doCrypteos --list "$2"
+                ;;
+            add)
+                doCrypteos --add "$2"
+                services="$(doCrypteos --list "$2" 2>/dev/null )" 
+                ;;
+            addExisting)
+                stty -echo
+                read -p "What is the new password to store? " new_password
+                echo
+                stty echo
+                doCrypteos --add "$2" --key "$new_password"
+                services="$(doCrypteos --list "$2" 2>/dev/null )" 
+                ;;
+            file)
+                DB_FILE_OPT="--file \"$2\""
+                askMasterPassword
+                ;;
+            exit|quit|q)
+                exit 0
+                ;;
+            *)
+                if [ -n "$reponse" ] ; then
+                    echo "Command not found: '$reponse'"
+                fi
+                ;;
+        esac
+    done
+
+}
 
 
 askMasterPassword
-echo
-
 menu

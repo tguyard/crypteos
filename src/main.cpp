@@ -30,6 +30,8 @@ int main(int argc, char **argv) {
 	("add,a", po::value<std::string>(), "Add a service. (use the --key switch to input the key, or a random one will be generated).")//
 	("key,k", po::value<std::string>()->implicit_value(""), "Add a key on a specified service (use the --add switch to specify the service).");
 
+    po::positional_options_description pd;
+    pd.add("get", 1);
 	po::options_description cmdline_options;
 	cmdline_options.add(optionsGeneric).add(optionsConfigure).add(optionsGet).add(optionsAdd);
 	po::options_description visible("Allowed options");
@@ -38,7 +40,7 @@ int main(int argc, char **argv) {
 	po::variables_map options;
 	try {
 		// Parse command line
-		po::parsed_options parsed = po::command_line_parser(argc, argv).options(visible).run();
+		po::parsed_options parsed = po::command_line_parser(argc, argv).options(visible).positional(pd).run();
 		po::store(parsed, options);
 		po::notify(options);
 	} catch (std::logic_error & error) {
@@ -79,7 +81,7 @@ int main(int argc, char **argv) {
 	if (options.count("list")) {
 		std::vector<std::string> services = manager.getServiceNames();
 		if (services.size() == 0) {
-			std::cout << "No service ..." << std::endl;
+			std::cerr << "No service ..." << std::endl;
 		}
 		for (unsigned int i = 0; i < services.size(); ++i) {
 			std::cout << services[i] << std::endl;

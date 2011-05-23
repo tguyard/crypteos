@@ -35,7 +35,7 @@ DBManager::ERROR DBManager::initialize(const std::string& password) {
 	return rtn;
 }
 DBManager::ERROR DBManager::createDBFile(const std::string& password, const std::string& dbfile) {
-	std::cout << "File not found! Creating a new one." << std::endl;
+	std::cerr << "File not found! Creating a new one." << std::endl;
 	std::ofstream file(dbfile.c_str(), std::ios::out);
 	if (!file) {
 		std::cerr << "Cannot open the current dbfile for writing. Modifications are discarded." << std::endl;
