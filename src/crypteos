@@ -4,9 +4,6 @@ PASSWORD=
 DB_FILE_OPT=
 filter=/tmp/filteraefddaef
 
-doCrypteos(){
-    echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT $@
-}
 
 echo '#!/usr/bin/env perl
 
@@ -81,18 +78,18 @@ file {file}
 EOF
 }
 
+doCrypteos(){
+    echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT $@
+}
+
+updateServices(){
+    services="$( (doCrypteos --list || askMasterPassword) | tr "\n" " " 2>/dev/null )" 
+}
+
 askMasterPassword(){
-    stty -echo
-    read -p "I need your password: " PASSWORD
+    read -s -p "I need your password: " PASSWORD
     echo
-    stty echo
-    
-    services="$(doCrypteos --list "$2" | tr "\n" " " 2>/dev/null )" 
-    if [ $? != 0 ] 
-    then
-        echo "Wrong passwords."
-        askMasterPassword
-    fi
+    updateServices 
 }
 
 menu(){
@@ -105,25 +102,23 @@ menu(){
                 help
                 ;;
             copy)
-                doCrypteos --get "$2" | xsel
+                echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT --get "$2" | xsel
                 ;;
             cat)
-                doCrypteos --get "$2"
+                echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT --get "$2"
                 ;;
             ls)
-                doCrypteos --list "$2"
+                echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT --list 
                 ;;
             add)
-                doCrypteos --add "$2"
-                services="$(doCrypteos --list "$2" 2>/dev/null )" 
+                echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT --add "$2"
+                updateServices
                 ;;
             addExisting)
-                stty -echo
-                read -p "What is the new password to store? " new_password
-                echo
-                stty echo
-                doCrypteos --add "$2" --key "$new_password"
-                services="$(doCrypteos --list "$2" 2>/dev/null )" 
+                read -s -e -p "Enter the password to add: " new_password
+                echo 
+                echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT --add "$2" --key "$new_password"
+                updateServices
                 ;;
             file)
                 DB_FILE_OPT="--file \"$2\""
