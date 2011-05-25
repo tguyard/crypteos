@@ -1,7 +1,9 @@
 #!/bin/bash
 
+if [ -n "$1" ] && [ -e "$1" ] ; then
+    DB_FILE_OPT="-f $1"
+fi
 PASSWORD=
-DB_FILE_OPT=
 filter=/tmp/filteraefddaef
 
 
@@ -87,7 +89,9 @@ updateServices(){
 }
 
 askMasterPassword(){
+    stty -echo
     read -s -p "I need your password: " PASSWORD
+    stty echo
     echo
     updateServices 
 }
@@ -102,27 +106,49 @@ menu(){
                 help
                 ;;
             copy)
-                echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT --get "$2" | xsel
+                if [ -n "$2" ] ; then
+                    echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT --get "$2" | xsel
+                else 
+                    echo an argument is missing !
+                fi
                 ;;
             cat)
-                echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT --get "$2"
+                if [ -n "$2" ] ; then
+                    echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT --get "$2"
+                else 
+                    echo an argument is missing !
+                fi
                 ;;
             ls)
                 echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT --list 
                 ;;
             add)
-                echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT --add "$2"
-                updateServices
+                if [ -n "$2" ] ; then
+                    echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT --add "$2"
+                    updateServices
+                else 
+                    echo an argument is missing !
+                fi
                 ;;
             addExisting)
-                read -s -e -p "Enter the password to add: " new_password
-                echo 
-                echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT --add "$2" --key "$new_password"
-                updateServices
+                if [ -n "$2" ] ; then
+                    stty -echo
+                    read -s -e -p "Enter the password to add: " new_password
+                    echo 
+                    stty echo
+                    echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT --add "$2" --key "$new_password"
+                    updateServices
+                else 
+                    echo an argument is missing !
+                fi
                 ;;
             file)
-                DB_FILE_OPT="--file \"$2\""
-                askMasterPassword
+                if [ -n "$2" ] ; then
+                    DB_FILE_OPT="--file $2"
+                    askMasterPassword
+                else 
+                    echo an argument is missing !
+                fi
                 ;;
             exit|quit|q)
                 exit 0
