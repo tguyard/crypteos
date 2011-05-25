@@ -16,6 +16,7 @@ using CryptoPP::AutoSeededRandomPool;
 #endif
 #include <iostream>
 #include <stdexcept>
+#include <cstdio>
 
 std::string PasswordManager::askPasswordHidden(const std::string& message) {
 	std::string password;
