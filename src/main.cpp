@@ -18,24 +18,30 @@ int main(int argc, char **argv) {
 	po::options_description optionsConfigure("Configuration options");
 	optionsConfigure.add_options()//
 	("file,f", po::value<std::string>()->default_value("./keysdb.aes"), "Specify a file containing the encrypted password.")//
-	("hidden,d", po::value<bool>()->default_value(true), "Hide the password when typing them.");
+	("hidden,d", po::value<bool>()->default_value(true), "Hide the password when typing them.")//
+	("passwd,p", po::value<std::string>(), "Create a new file with a different password (use the --newpw to specify the new password).")//
+	("newpw,P", po::value<std::string>(), "Choose the new password (use the --passwd switch to specify the output file).");
+
 
 	po::options_description optionsGet("Get Keys");
 	optionsGet.add_options()//
 	("list,l", "List all the services on which password has been saved.")//
 	("get,g", po::value<std::string>(), "Get a password for an existing service.");
 
-	po::options_description optionsAdd("Add keys");
-	optionsAdd.add_options()//
+	po::options_description optionsModify("Modify keys");
+	optionsModify.add_options()//
 	("add,a", po::value<std::string>(), "Add a service. (use the --key switch to input the key, or a random one will be generated).")//
-	("key,k", po::value<std::string>()->implicit_value(""), "Add a key on a specified service (use the --add switch to specify the service).");
+	("key,k", po::value<std::string>()->implicit_value(""), "Add a key on a specified service (use the --add switch to specify the service).")//
+	("remove,D", po::value<std::string>(), "Remove a service.")//
+	("rename,m", po::value<std::string>(), "Rename a service. (use the --name choose the new name).")//
+	("name,n", po::value<std::string>()->implicit_value(""), "New name for a specified service (use the --rename switch to specify the service).");
 
     po::positional_options_description pd;
     pd.add("get", 1);
 	po::options_description cmdline_options;
-	cmdline_options.add(optionsGeneric).add(optionsConfigure).add(optionsGet).add(optionsAdd);
+	cmdline_options.add(optionsGeneric).add(optionsConfigure).add(optionsGet).add(optionsModify);
 	po::options_description visible("Allowed options");
-	visible.add(optionsGeneric).add(optionsConfigure).add(optionsGet).add(optionsAdd);
+	visible.add(optionsGeneric).add(optionsConfigure).add(optionsGet).add(optionsModify);
 
 	po::variables_map options;
 	try {
@@ -56,7 +62,7 @@ int main(int argc, char **argv) {
 		std::cout << "Version 0.9" << std::endl;
 		return 0;
 	}
-	if (!(options.count("list") || options.count("get") || options.count("add") || options.count("key"))) {
+	if (!(options.count("list") || options.count("get") || options.count("add") || options.count("key") || options.count("remove") || options.count("rename") || options.count("passwd"))) {
 		std::cerr << "I am waiting for at least one option ..." << std::endl;
 		std::cerr << visible << std::endl;
 		return -1;
@@ -111,6 +117,44 @@ int main(int argc, char **argv) {
 			return -1;
 		}
 		return manager.applyChanges();
+	}
+	if (options.count("remove")) {
+		if (!manager.removeKey(options["remove"].as<std::string> ())) {
+			return -1;
+		}
+		return manager.applyChanges();
+	}
+	if (options.count("rename") && options.count("name")) {
+	    
+        std::string key = manager.getKey(options["rename"].as<std::string> ());
+	
+		if (manager.addKey(options["name"].as<std::string> (), key) && manager.removeKey(options["rename"].as<std::string> ())) {
+    		return manager.applyChanges();			
+		}
+	}
+	
+	if (options.count("passwd")) {
+	    std::string newFilename = options["passwd"].as<std::string> ();
+	
+
+	    
+        std::string newPassword = options["newpw"].as<std::string> ();
+
+	    DBManager newManager(newFilename);	    
+	    DBManager::ERROR error = newManager.initialize(newPassword);
+	    if (error != DBManager::OK) {
+		    std::cerr << "Error. exiting." << std::endl;
+		    return error;
+	    }
+	    
+	    std::vector<std::string> services = manager.getServiceNames();
+
+		for (unsigned int i = 0; i < services.size(); ++i) {
+			newManager.addKey(services[i], manager.getKey(services[i]));
+		}
+	    
+	    return newManager.applyChanges();
+	
 	}
 
 	std::cerr << visible << std::endl;
