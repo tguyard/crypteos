@@ -41,6 +41,7 @@ public:
 	std::string getKey(const std::string& serviceName);
 	std::vector<std::string> getServiceNames();
 	bool addKey(const std::string& serviceName, const std::string& key);
+	bool removeKey(const std::string& serviceName);
 	bool applyChanges();
 
 private:

@@ -15,7 +15,7 @@ use strict;
 
 my $filter = new RlwrapFilter;
 my $name = $filter -> name;
-my @commands = ("ls", "cat", "add","addExisting", "copy", "file", "help", "exit", "quit");
+my @commands = ("ls", "cat", "add","addExisting", "copy", "rm", "mv", "file", "help", "exit", "quit");
 my @services =  @ARGV;
 
 $filter -> completion_handler(\&complete);
@@ -38,6 +38,12 @@ sub complete {
         return grep(/^$prefix/, @services);
     }
     if ($first eq "cat"){
+        return grep(/^$prefix/, @services);
+    }
+    if ($first eq "rm"){
+        return grep(/^$prefix/, @services);
+    }
+    if ($first eq "mv"){
         return grep(/^$prefix/, @services);
     }
     if ($first eq "file") {
@@ -73,6 +79,9 @@ addExisting {service}
 
 copy {service}
     Copy to the clipbord the password for *service*. (Use xsel)
+
+rm {service}
+    Remove an existing service.
 
 file {file}
     Change the db file.
@@ -142,6 +151,22 @@ menu(){
                     echo an argument is missing !
                 fi
                 ;;
+            rm)
+                if [ -n "$2" ] ; then
+                    echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT --remove "$2"
+                    updateServices
+                else 
+                    echo an argument is missing !
+                fi
+                ;;
+            mv)
+                if [ -n "$2" ] ; then
+                    echo $PASSWORD | crypteos-bin --hidden false $DB_FILE_OPT --rename "$2" --name "$3"
+                    updateServices
+                else 
+                    echo an argument is missing !
+                fi
+                ;;    
             file)
                 if [ -n "$2" ] ; then
                     DB_FILE_OPT="--file $2"

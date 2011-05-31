@@ -145,6 +145,29 @@ bool DBManager::addKey(const std::string& serviceName, const std::string& key) {
 	return true;
 }
 
+
+bool DBManager::removeKey(const std::string& serviceName) {
+	if (encryptor == NULL) {
+		std::cerr << "Remove key ignored: " << serviceName << std::endl;
+		return false;
+	}
+	if (parseError) {
+		std::cerr << "Due to parse error, we are read only. Nothing to do..." << std::endl;
+		return false;
+	}
+	try {
+		DB::iterator findIt = values.find(serviceName);
+		if (findIt != values.end()) {
+			values.erase(findIt);
+			return true;
+		}
+	} catch (CryptoPP::Exception& e) {
+		std::cerr << e.what() << std::endl;
+		return false;
+	}
+	return false;
+}
+
 bool DBManager::applyChanges() {
 	if (parseError) {
 		std::cerr << "Due to parse error, we are read only. Nothing to do..." << std::endl;
