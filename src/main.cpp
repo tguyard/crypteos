@@ -18,7 +18,10 @@ int main(int argc, char **argv) {
 	po::options_description optionsConfigure("Configuration options");
 	optionsConfigure.add_options()//
 	("file,f", po::value<std::string>()->default_value("./keysdb.aes"), "Specify a file containing the encrypted password.")//
-	("hidden,d", po::value<bool>()->default_value(true), "Hide the password when typing them.");
+	("hidden,d", po::value<bool>()->default_value(true), "Hide the password when typing them.")//
+	("passwd,p", po::value<std::string>(), "Create a new file with a different password (use the --newpw to specify the new password).")//
+	("newpw,P", po::value<std::string>(), "Choose the new password (use the --passwd switch to specify the output file).");
+
 
 	po::options_description optionsGet("Get Keys");
 	optionsGet.add_options()//
@@ -59,7 +62,7 @@ int main(int argc, char **argv) {
 		std::cout << "Version 0.9" << std::endl;
 		return 0;
 	}
-	if (!(options.count("list") || options.count("get") || options.count("add") || options.count("key") || options.count("remove") || options.count("rename"))) {
+	if (!(options.count("list") || options.count("get") || options.count("add") || options.count("key") || options.count("remove") || options.count("rename") || options.count("passwd"))) {
 		std::cerr << "I am waiting for at least one option ..." << std::endl;
 		std::cerr << visible << std::endl;
 		return -1;
@@ -128,6 +131,30 @@ int main(int argc, char **argv) {
 		if (manager.addKey(options["name"].as<std::string> (), key) && manager.removeKey(options["rename"].as<std::string> ())) {
     		return manager.applyChanges();			
 		}
+	}
+	
+	if (options.count("passwd")) {
+	    std::string newFilename = options["passwd"].as<std::string> ();
+	
+
+	    
+        std::string newPassword = options["newpw"].as<std::string> ();
+
+	    DBManager newManager(newFilename);	    
+	    DBManager::ERROR error = newManager.initialize(newPassword);
+	    if (error != DBManager::OK) {
+		    std::cerr << "Error. exiting." << std::endl;
+		    return error;
+	    }
+	    
+	    std::vector<std::string> services = manager.getServiceNames();
+
+		for (unsigned int i = 0; i < services.size(); ++i) {
+			newManager.addKey(services[i], manager.getKey(services[i]));
+		}
+	    
+	    return newManager.applyChanges();
+	
 	}
 
 	std::cerr << visible << std::endl;
