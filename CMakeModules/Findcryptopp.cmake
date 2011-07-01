@@ -57,12 +57,17 @@ FIND_PATH (CRYPTOPP_ROOT_DIR
     PATHS ${_CRYPTOPP_POSSIBLE_DIRS}
     DOC "CryptoPP root directory")
 
+
 # Re-use the previous path:
 FIND_PATH (CRYPTOPP_INCLUDE_DIR 
     NAMES cryptopp/cryptlib.h
     PATHS ${CRYPTOPP_ROOT_DIR}
     PATH_SUFFIXES ${_CRYPTOPP_POSSIBLE_INCLUDE_SUFFIXES}
     DOC "CryptoPP include directory")
+
+IF (CRYPTOPP_INCLUDE_DIR)
+    add_definitions(-DCRYPTOPP)
+ENDIF (CRYPTOPP_INCLUDE_DIR)
 
 IF (WIN32 AND NOT CYGWIN)
     IF (MSVC)
@@ -102,7 +107,7 @@ IF (WIN32 AND NOT CYGWIN)
     ENDIF (MSVC)
 ELSE (WIN32 AND NOT CYGWIN)
     FIND_LIBRARY (CRYPTOPP_LIBRARIES 
-        NAMES libcrypto++.a
+        NAMES libcrypto++.a libcryptopp.a
         PATH_SUFFIXES ${_CRYPTOPP_POSSIBLE_LIB_SUFFIXES}
         DOC "CryptoPP library")
 ENDIF (WIN32 AND NOT CYGWIN)
