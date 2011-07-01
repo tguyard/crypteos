@@ -6,7 +6,13 @@
 // Includes /////////////////////////////////////////////////////// Includes //
 #include "PasswordManager.h"
 
-#include "crypto++/osrng.h"
+
+#ifdef CRYPTOPP
+    #include "cryptopp/osrng.h"
+#else
+    #include "crypto++/osrng.h"
+#endif
+
 using CryptoPP::AutoSeededRandomPool;
 
 #ifdef HAVE_TERMIOS_H

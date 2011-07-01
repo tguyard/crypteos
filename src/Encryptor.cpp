@@ -4,27 +4,38 @@
  */
 
 // Resolve a bug in crypto++ !!
-#include "crypto++/integer.h"
+#ifdef CRYPTOPP
+    #include "cryptopp/integer.h"
+    #include "cryptopp/osrng.h"
+    #include "cryptopp/cryptlib.h"
+    #include "cryptopp/hex.h"
+    #include "cryptopp/filters.h"
+    #include "cryptopp/aes.h"
+    #include "cryptopp/modes.h"
+    #include "cryptopp/pwdbased.h"
+#else
+    #include "crypto++/integer.h"
+    #include "crypto++/osrng.h"
+    #include "crypto++/cryptlib.h"
+    #include "crypto++/hex.h"
+    #include "crypto++/filters.h"
+    #include "crypto++/aes.h"
+    #include "crypto++/modes.h"
+    #include "crypto++/pwdbased.h"
+#endif
 
 // Includes /////////////////////////////////////////////////////// Includes //
 #include "Encryptor.h"
 
-#include "crypto++/osrng.h"
 using CryptoPP::AutoSeededRandomPool;
-#include "crypto++/cryptlib.h"
 using CryptoPP::Exception;
-#include "crypto++/hex.h"
 using CryptoPP::HexEncoder;
 using CryptoPP::HexDecoder;
-#include "crypto++/filters.h"
 using CryptoPP::StringSink;
 using CryptoPP::StringSource;
 using CryptoPP::StreamTransformationFilter;
-#include "crypto++/aes.h"
 using CryptoPP::AES;
-#include "crypto++/modes.h"
 using CryptoPP::ECB_Mode;
-#include "crypto++/pwdbased.h"
 using CryptoPP::PKCS5_PBKDF2_HMAC;
 
 #include <string>

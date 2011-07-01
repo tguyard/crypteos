@@ -10,7 +10,15 @@
 // Local includes /////////////////////////////////////////// Local includes //
 
 // System includes ///////////////////////////////////////// System includes //
-#include <crypto++/cryptlib.h>
+
+#ifdef CRYPTOPP
+    #include <cryptopp/cryptlib.h>
+#else
+    #include <crypto++/cryptlib.h>
+#endif
+
+
+
 #include <boost/noncopyable.hpp>
 #include <string>
 
